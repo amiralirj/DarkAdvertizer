@@ -1,0 +1,4 @@
+requests 
+pyrogram 
+tabulate
+bs4
