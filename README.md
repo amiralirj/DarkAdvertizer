@@ -1,6 +1,6 @@
 ![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white) ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/Naereen/StrapDown.js/blob/master/LICENSE)
 -
-[![GitHub forks](https://img.shields.io/github/forks/amiralirj/DarkAdvertizer.js.svg?style=social&label=Fork&maxAge=2592000)](https://GitHub.com/amiralirj/DarkAdvertizer)
+[![GitHub forks](https://img.shields.io/github/forks/Naereen/StrapDown.js.svg?style=social&label=Fork&maxAge=2592000)](https://GitHub.com/Naereen/StrapDown.js/network/)
 -
 
 # DarkAdvertizer 🌪
