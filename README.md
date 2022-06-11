@@ -1,4 +1,6 @@
-![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white) ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white) ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/Naereen/StrapDown.js/blob/master/LICENSE)
+[![Github releases (by asset)](https://img.shields.io/github/downloads/Naereen/StrapDown.js/latest/strapdown.min.js)](https://GitHub.com/Naereen/StrapDown.js/releases/)
+[![GitHub forks](https://badgen.net/github/forks/Naereen/Strapdown.js/)](https://GitHub.com/Naereen/StrapDown.js/network/)
 # DarkAdvertizer 🌪
 - 🔱 A bot for advertising and control accounts in TELEGRAM 🔱
 - 🔱 SAVE YOUR ACCOUNT IN ROBOT SAFELY 🔱
