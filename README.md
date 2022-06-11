@@ -1,3 +1,4 @@
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
 # DarkAdvertizer 🌪
 - 🔱 A bot for advertising and control accounts in TELEGRAM 🔱
 - 🔱 SAVE YOUR ACCOUNT IN ROBOT SAFELY 🔱
