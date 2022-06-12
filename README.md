@@ -3,7 +3,7 @@
 [![GitHub forks](https://img.shields.io/github/forks/amiralirj/DarkAdvertizer.svg?style=social&label=Fork&maxAge=2592000)](https://GitHub.com/amiralirj/DarkAdvertizer/network/)
 
 [![GitHub stars](https://img.shields.io/github/stars/amiralirj/DarkAdvertizer.svg?style=social&label=Star&maxAge=2592000)](https://GitHub.com/amiralirj/DarkAdvertizer/stargazers/)
-
+# Account Receiver 🔥
 # DarkAdvertizer 🌪
 - 🔱 A bot for advertising and control accounts in TELEGRAM 🔱
 - 🔱 SAVE YOUR ACCOUNT IN ROBOT SAFELY 🔱
