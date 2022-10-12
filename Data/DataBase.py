@@ -1,5 +1,6 @@
 import sqlite3 as db
 from tabulate import tabulate
+import datetime
 
 import os
 #SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__)) 
@@ -10,11 +11,10 @@ class Data:
         self.con = db.connect(f"AttackBase.db" , detect_types=db.PARSE_DECLTYPES, check_same_thread = False)
         self.c=self.con.cursor()#banner INT 
         #,  INT,  INT, New INT ,  TEXT ,autopro INT,autobio TEXT
-        self.c.execute('CREATE TABLE IF NOT EXISTS Users (User_id INT PRIMARY KEY, Coins INT , Latary INT )')
+        self.c.execute('CREATE TABLE IF NOT EXISTS Users (User_id INT PRIMARY KEY, Coins INT , Membership TEXT )')
         self.c.execute('CREATE TABLE IF NOT EXISTS Attack (User_id INT PRIMARY KEY , Banners TEXT , Round_speed INT , Attack_speed INT , Auto_name TEXT , Auto_profile INT , Auto_bio TEXT , Auto_api INT)')
-        self.c.execute('CREATE TABLE IF NOT EXISTS Accounts (number INT PRIMARY KEY , api_hash TEXT , api_id INT , session TEXT ,user_id INT, active INT )')
+        self.c.execute('CREATE TABLE IF NOT EXISTS Accounts (number INT PRIMARY KEY , api_hash TEXT , api_id INT , session TEXT ,user_id INT, active INT , natural INT )')
         self.c.execute('CREATE TABLE IF NOT EXISTS Deleted (number INT PRIMARY KEY )')
-        self.c.execute('CREATE TABLE IF NOT EXISTS API_Keys (API TEXT PRIMARY KEY , App_ID INT , User_id INT )')
         self.con.commit()
         print('DataBase Has Successfully Loaded') 
     
@@ -29,10 +29,16 @@ class Data:
         rows=self.c.fetchall()
         return rows
     
+    @property
+    def Natural_Accounts(self):
+        self.c.execute('SELECT number,api_id,api_hash,session,user_id FROM accounts WHERE natural=1')
+        rows=self.c.fetchall()
+        return rows
+        
     @property 
     def All_Data_Text(self) -> str:
         Text='DARK ADVERTIZER -  DARK ADVERTIZER - DARK ADVERTIZER \n WWW.GITHUB.COM/AMIRALIRJ \n DARK ADVERTIZER -  DARK ADVERTIZER - DARK ADVERTIZER \n \n '
-        Tabels={'Users':['User_id','Coins','Latary'],'Attack':['User_id','Banners','Round_speed','Attack_speed','Auto_name','Auto_profile','Auto_bio','Auto_api'],'Accounts':['number','api_hash','api_id','session','user_id','active']}
+        Tabels={'Users':['User_id','Coins','Membership'],'Attack':['User_id','Banners','Round_speed','Attack_speed','Auto_name','Auto_profile','Auto_bio','Auto_api'],'Accounts':['number','api_hash','api_id','session','user_id','active']}
         for i in Tabels :
             Data=self.c.execute(f'SELECT * FROM {i}').fetchall()
             tab=tabulate(Data , Tabels[i],  tablefmt="pretty")
@@ -49,7 +55,7 @@ class Data:
             self.git='www.github.com\amiralirj'
         
         def Add_User(self):
-            self.c.execute('INSERT OR IGNORE INTO Users (User_id,Coins,Latary) VALUES (:User_id,:Coins,:Latary)',{'User_id':self.User_id,'Coins':0,'Latary':0})
+            self.c.execute('INSERT OR IGNORE INTO Users (User_id,Coins,Membership) VALUES (:User_id,:Coins,:Membership)',{'User_id':self.User_id,'Coins':0,'Membership':'None'})
             self.c.execute('INSERT OR IGNORE INTO Attack (User_id,Banners,Round_speed,Attack_speed,Auto_name,Auto_profile,Auto_bio,Auto_api) VALUES (:User_id,:Banners,:Round_speed,:Attack_speed,:Auto_name,:Auto_profile,:Auto_bio,:Auto_api)',
                            {'User_id':self.User_id,'Banners':0,'Round_speed':1,'Attack_speed':1,'Auto_name':'None','Auto_profile':0,'Auto_bio':'None','Auto_api':1})
             self.con.commit()
@@ -57,6 +63,29 @@ class Data:
         def addcoin(self,Amount:int):
             self.c.execute(f'UPDATE Users set Coins=Coins+{int(Amount)} WHERE User_id=:user',{'user':int(self.User_id)})
             self.con.commit()
+            
+        def Add_Membership(self,date):
+            membership=str(datetime.date.today() + datetime.timedelta(days=date))
+            self.c.execute(f'UPDATE Users SET Membership=:Membership WHERE User_id=:user',{'user':int(self.User_id),'Membership':membership})
+            self.con.commit()
+            return membership
+        
+        @property
+        def Show_Membership(self):
+            self.c.execute('SELECT Membership FROM Users WHERE User_id=:user_id',{'user_id':int(self.User_id)})
+            M_D=str((self.c.fetchall())[0][0])
+            if M_D == 'None':'2004-2-24'
+            return M_D
+        
+        @property
+        def Have_Membership(self):
+            Day = datetime.datetime.now()
+            m_date=self.Show_Membership
+            if m_date == 'None': return False
+            End_Sub = datetime.datetime.now().strptime(m_date,"%Y-%m-%d")
+            if Day < End_Sub:
+                return True
+            return False
             
         def Reduce_Coin(self,Amount:int):
             self.c.execute(f'UPDATE Users SET Coins=Coins-{int(Amount)} WHERE User_id=:user',{'user':int(self.User_id)})
@@ -206,6 +235,13 @@ class Data:
                 return True
             else:
                 return False
+        
+        def Natural_Check(self):
+            self.c.execute('SELECT natural FROM accounts WHERE number=:number',{'number':self.Number})
+            if int(self.c.fetchall()[0][0])==1:
+                return True
+            else:
+                return False
             
         def Number_Check(self):
             self.c.execute('SELECT number FROM accounts WHERE number=:number',{'number':self.Number})
@@ -213,6 +249,9 @@ class Data:
             if q==[]:
                 return False
             else:
+                # if len(q[0]) <= 2:
+                #     self.c.execute('DELETE FROM accounts WHERE number=:num ',{'num':int(self.Number)})
+                #     return False
                 return True
         
         def Number_Details(self):
@@ -223,7 +262,7 @@ class Data:
             except:False
 
         def regester_account(self,api_hash,api_id,setion_str):
-            self.c.execute('insert into accounts (number,api_hash,api_id,session,user_id,active) values (:number,:api_hash,:api_id,:session,:user_id,:active)',{'active':1,'number':int(self.Number),'api_hash':str(api_hash),'api_id':int(api_id),'session':str(setion_str),'user_id':int(self.User_id)})
+            self.c.execute('insert into accounts (number,api_hash,api_id,session,user_id,active,natural) values (:number,:api_hash,:api_id,:session,:user_id,:active,:natural)',{'active':1,'number':int(self.Number),'api_hash':str(api_hash),'api_id':int(api_id),'session':str(setion_str),'user_id':int(self.User_id),'natural':0})
             self.con.commit()
         
 
@@ -240,19 +279,25 @@ class Data:
                 row[0][0]
                 return True
             except:
-                return False
+                return False 
             
-        def Activity(self,Activity:bool):
-            self.c.execute(f'UPDATE accounts SET active=:act WHERE number=:number' ,{'act':int(Activity),'number':int(self.Number)})
+        def Activity(self,activity:bool):
+            self.c.execute(f'UPDATE accounts SET active=:act WHERE number=:number' ,{'act':int(activity),'number':int(self.Number)})
+            self.con.commit()
+            
+        def Natural(self,Natural:bool):
+            self.c.execute(f'UPDATE accounts SET natural=:natt WHERE number=:number' ,{'natt':int(Natural),'number':int(self.Number)})
             self.con.commit()
         
 
         def Transfer(self,Reciver):
-            num=self.c.execute('SELECT number,api_hash,api_id,session FROM accounts WHERE user_id=:user_id AND number=:num  ',{'user_id':int(self.User_id),'num':self.Number}).fetchall()[0]
-            self.c.execute('DELETE FROM accounts WHERE number=:num AND user_id=:user_id',{'user_id':int(self.User_id),'num':int(self.Number)})
-            try:self.Delete_Number()
-            except:pass
-            self.c.execute('INSERT into accounts (number,api_hash,api_id,session,user_id,active) values (:num,:api_hash,:api_id,:session,:user_id,:active)',{'active':1,'num':str(num[0]),'api_hash':str(num[1]),'api_id':int(num[2]),'session':str(num[3]),'user_id':int(Reciver)})
+            if self.Account_Verify() : 
+                self.c.execute(f'UPDATE accounts SET user_id=:usid WHERE number=:number' ,{'usid':int(Reciver),'number':int(self.Number)})
+            # num=self.c.execute('SELECT number,api_hash,api_id,session FROM accounts WHERE user_id=:user_id AND number=:num  ',{'user_id':int(self.User_id),'num':self.Number}).fetchall()[0]
+            # self.c.execute('DELETE FROM accounts WHERE number=:num AND user_id=:user_id',{'user_id':int(self.User_id),'num':int(self.Number)})
+            # try:self.Delete_Number()
+            # except:pass
+            # self.c.execute('INSERT into accounts (number,api_hash,api_id,session,user_id,active) values (:num,:api_hash,:api_id,:session,:user_id,:active)',{'active':1,'num':str(num[0]),'api_hash':str(num[1]),'api_id':int(num[2]),'session':str(num[3]),'user_id':int(Reciver)})
             self.con.commit()
             return self.Number
 
