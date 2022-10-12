@@ -26,7 +26,7 @@ Photos_Path=r'/root/Advertiser/Data/Fake_Details/Photos'  # PHOTOS PATH WHICH WI
 Fake_Details_Path=r'/root/Advertiser/Data/Fake_Details'  # FAKE DETAILS PATH WHICH WILL USED FOR FAKE PERSONALITY MAKING  > 3 .txt FILES > Bio.txt & Name.txt & Username.txt
 Sessions='/root/Advertiser/Sessions'  #  WHERE SESSIONS SAVE
 Dark_Channel='DarkBotsChannel' # TELEGRAM CHANNEL 
-Natural_Channels=['@DarkBotsChannel' , '@Amiralirj_Official' , '@gizmiztel' , '@ahangrj']#, '@phoebtus' 
+Natural_Channels=['@DarkBotsChannel' , '@Amiralirj_Official' , '@gizmiztel' , '@ahangrj']# 
 #--------------------------------------------------------------------------| Prices
 Adding_Account=-30
 Delete_Account=-4
