@@ -13,13 +13,60 @@ async def Add_Coin(bot,message):
     if Id.isdigit():Id=int(Id)
     try:
         user= (await bot.get_users(Id)).id
-        User(user).Add_Coin(Coin)
+        User(user).Add_Coin(Coin,True)
         await bot.send_message( user , TEXTS.Coin_Tranfered(Coin))
         await message.reply_text(TEXTS.Coin_Submitted , reply_markup=BUTTONS.Management)
     except:await message.reply_text(TEXTS.Not_Started , reply_markup=BUTTONS.Management)
+
+@Advertising.on_message(RJ.filters.user(RJ.Owner) & RJ.regex('اشتراک روزانه 📅') , group=0)
+async def Add_Membership(bot,message):
+    user=Config.OWNER
+    try:
+        Id=str((await bot.Ask(int(user),TEXTS.Ask_Id,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120)).text)
+        Date=int((await bot.Ask(int(user),TEXTS.Ask_Date,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120)).text)
+    except TimeoutError :pass
     
+    if Id.isdigit():Id=int(Id)
+    try:
+        user= (await bot.get_users(Id)).id
+        Ex_date=User(user).Add_Membership(Date)
+        await bot.send_message( user , TEXTS.Membership_Added(Ex_date))
+        await message.reply_text(TEXTS.Membership_Submitted , reply_markup=BUTTONS.Management)
+    except Exception as e :
+        print(e)
+        await message.reply_text(TEXTS.Not_Started , reply_markup=BUTTONS.Management)
+
+
 @Advertising.on_message(RJ.filters.user(RJ.Owner) & RJ.regex('انقال اکانت 👻') , group=0)
-async def Transfere_Deleted_Account_Numbers(bot,message):pass
+async def Transfer_Deleted_Account_Numbers(bot,message):
+    user=int((await bot.Ask(int(RJ.Owner),TEXTS.AskDeleted_Account,Msg=message,filters=RJ.filters.user(int(RJ.Owner)),reply_markup=BUTTONS.Cancel,timeout=120)).text)
+    new_user=str((await bot.Ask(int(RJ.Owner),TEXTS.Ask_Reciver,Msg=message,filters=RJ.filters.user(int(RJ.Owner)),reply_markup=BUTTONS.Cancel,timeout=120)).text)
+    user=User(user)
+    try:
+        new_user= (await bot.get_users(new_user)).id
+    except:
+        await message.reply_text(TEXTS.Not_Started , reply_markup=BUTTONS.Management)
+        return
+    new_user=User(int(new_user))
+    new_user.Add_Coin(user.Coin,True)
+    user.Set_0()
+    x=''
+    for i in user.All_numbers :
+        Number(str(i['num']),int(user)).Transfer(int(new_user))
+        x+=f'` +{i["num"]} ` \n '
+        
+        if len(x.split('\n')) > 50 :
+            x=''
+            await message.reply_text(TEXTS.Account_Tranferred(x,int(user),int(new_user)))
+            await bot.send_message(int(new_user),TEXTS.Account_Tranferred(x,int(user),int(new_user)))
+            
+    if len(x.split('\n')) >=1  :
+        await message.reply_text(TEXTS.Account_Tranferred(x,int(user),int(new_user)),reply_markup=BUTTONS.Management)
+        await bot.send_message(int(new_user),TEXTS.Account_Tranferred(x,int(user),int(new_user)),reply_markup=BUTTONS.Management)
+                
+                
+            
+            
 
 @Advertising.on_message(RJ.filters.user(RJ.Owner) & RJ.regex('نجوا 📩') , group=0)
 async def Send_All(bot,message):
@@ -75,7 +122,22 @@ async def Admin_Catchers(bot,message):
     if len(X.split('\n')) > 0 :
             await message.reply_text(TEXTS.Username_Catched(X),reply_markup=BUTTONS.Management)
         
-
+@Advertising.on_message(RJ.filters.user(RJ.Owner) & RJ.regex('فرایند ها 🔆') , group=0)
+async def Active_Users(bot,message):
+    Users=RJ.Active_Procces
+    text=''
+    for i in Users:
+        text+=f'` {i} ` \n '
+    
+    text2=TEXTS.message_C
+    ms=RJ.ms
+    for i in ms :
+        text2+=f'{i} >>> {ms[i]} '
+        
+    await message.reply_text(text2,reply_markup=BUTTONS.Management)
+    await message.reply_text(TEXTS.Active_Procceses_Len(len(Users)),reply_markup=BUTTONS.Management)
+    await message.reply_text(TEXTS.Active_Procceses(text),reply_markup=BUTTONS.Management)
+    
 @Advertising.on_message(RJ.filters.user(RJ.Owner) & RJ.regex('اطلاعات 🔭') , group=0)
 async def Stats(bot,message):
     bot_state=RJ.Details
@@ -93,8 +155,15 @@ async def Stats(bot,message):
 async def User_Stats_M(bot,message):
     user= (await bot.get_users(int(message.command[1])))
     await message.reply_text(TEXTS.User_Details(user.username, user.first_name , user.mention , user.id ),reply_markup=BUTTONS.Management)
+
+@Advertising.on_message(RJ.filters.user(RJ.Owner) & RJ.filters.command('zero') , group=0)
+async def Set_Coins_Zero(bot,message):
+    user= (int(message.command[1]))
+    User(user).Set_0()
+    await message.reply_text(TEXTS.Procces_Compeleted_WO_NO , reply_markup=BUTTONS.Management)
+    
     
 @Advertising.on_message(RJ.filters.user(RJ.Owner) & RJ.regex('پنل اصلی ⚙️') , group=0)
 async def Move_To_Pannel(bot,message):
-    await message.reply_text(TEXTS.start,reply_markup=BUTTONS.start)
+    await message.reply_text(TEXTS.start,reply_markup=BUTTONS.Start)
     

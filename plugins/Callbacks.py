@@ -9,21 +9,54 @@ async def Remove_Banner(bot:Advertising,query,user:User):
     
 @Advertising.on_callback_query(RJ.regex('^Change_Activity') , group=0)
 @RJ.User_Details
-async def Change_Activity(bot:Advertising,query,user:User):
-    C,Num,Page=(query.data).split(' ')
-    Num=Number(int(Num),int(user))
-    if Num.active:act=False
-    else:act=True
-    Num.Change_Activity(act)
-    Nums=[Number(i['num'],int(user)) for i in user.All_numbers ]
-    await query.edit_message_text(TEXTS.Change_Activity,reply_markup=BUTTONS.Activity(Nums,int(Page)))
+async def Change_Acc_Activity(bot:Advertising,query,user:User):
+    if 'All_Accs' in str(query.data):
+        XX=bool(int((query.data).split(' ')[-1]))
+        for i in [Number(i['num'],int(user)) for i in user.All_numbers ] :
+            if XX:
+                i.Change_Activity(True)
+            else:
+                i.Change_Activity(False)
+        await query.edit_message_text(TEXTS.All_Accounts_Turned)
+    else:
+        C,Num,Page=(query.data).split(' ')
+        Num=Number(int(Num),int(user))
+        if Num.active:act=False
+        else:act=True
+        Num.Change_Activity(act)
+        Nums=[Number(i['num'],int(user)) for i in user.All_numbers ]
+        await query.edit_message_text(TEXTS.Change_Activity,reply_markup=BUTTONS.Activity(Nums,int(Page)))
+    
+@Advertising.on_callback_query(RJ.regex('^Change_Natural') , group=0)
+@RJ.User_Details
+async def Change_Acc_Natural(bot:Advertising,query,user:User):
+    if 'All_Accs' in str(query.data):
+        XX=bool(int((query.data).split(' ')[-1]))
+        for i in [Number(i['num'],int(user)) for i in user.All_numbers ] :
+            if XX:
+                i.Change_Natural(True)
+            else:
+                i.Change_Natural(False)
+        await query.edit_message_text(TEXTS.All_Accounts_Turned)
+    else:
+        C,Num,Page=(query.data).split(' ')
+        Num=Number(int(Num),int(user))
+        if Num.natural:act=False
+        else:act=True
+        Num.Change_Natural(act)
+        Nums=[Number(i['num'],int(user)) for i in user.All_numbers ]
+        await query.edit_message_text(TEXTS.Change_Activity,reply_markup=BUTTONS.Natural(Nums,int(Page)))
     
 @Advertising.on_callback_query(RJ.regex('^Next') , group=0)
 @RJ.User_Details
 async def Next_Page(bot:Advertising,query,user:User):
-    Page=int((query.data).split(' ')[-1])
+    Page=int((query.data).split(' ')[-1]) + 20
     Nums=[Number(i['num'],int(user)) for i in user.All_numbers ]
-    await query.edit_message_text(TEXTS.Change_Activity,reply_markup=BUTTONS.Activity(Nums,Page))
+    print(Page)
+    if 'Next Nat' in str((query.data)):
+        await query.edit_message_text(TEXTS.Change_Activity,reply_markup=BUTTONS.Natural(Nums,Page))
+    else:
+        await query.edit_message_text(TEXTS.Change_Activity,reply_markup=BUTTONS.Activity(Nums,Page))
     
 @Advertising.on_callback_query(RJ.regex('^Auto_Details') , group=0)
 @RJ.User_Details

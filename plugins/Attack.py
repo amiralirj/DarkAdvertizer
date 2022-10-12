@@ -5,12 +5,14 @@ from pyrogram import errors
 from asyncio import sleep 
 from time import time
 import datetime
+import sys
+
 
 User_Links={}
 User_Attacking={}
 User_Spamming={}
 
-
+    
 #---------------------------------------------------------------------------------| BANNER |---------------------------------------------------------------------------------#
 @Advertising.on_message(RJ.prv & RJ.regex('^ثبت بنر📝') , group=0)
 @RJ.User_Details
@@ -45,11 +47,22 @@ async def Best_Attackers(bot,message,user:User):
     for j , i in enumerate(['WWW.GITHUB.COM','/','AMIRALIRJ']):
         try:
             X=max(Users)
+            if X[1] in [71068207,5070374948]:continue
             Mention=(await bot.get_users(X[1])).mention
             Text+=f'{Emojies[j]} {Mention} → {X[0]} \n'
             Users.remove(X)
-        except:pass
+        except Exception as e:RJ.Log(int(user),f'Best Attackers : {e}')
+        
     await message.reply_text(TEXTS.Bests(Text),reply_markup=BUTTONS.Attack)
+
+@Advertising.on_message(RJ.prv & RJ.regex('^⭐ رتبه من ⭐') , group=0)
+@RJ.User_Details
+@RJ.Coin_Limit
+async def Attacker_Rank(bot,message,user:User):
+    Users=sorted([len(User(int(i)).All_numbers) for i in RJ.All_Users])
+    Users.reverse()
+    rank=Users.index(len(user.All_numbers))+1
+    await message.reply_text(TEXTS.My_Rank(rank),reply_markup=BUTTONS.Attack)
     
 #---------------------------------------------------------------------------------| Attack |---------------------------------------------------------------------------------# 
 #---------------------------------------------------------------------------------| Attack |---------------------------------------------------------------------------------# 
@@ -74,7 +87,6 @@ async def Attack(app,i,link,user,msg,message):
             await app.copy_message(i,Config.Banners_Channel,user.Rand_Banner)
         user.Add_Coin(Config.Attack)
         await sleep(user.A_Speed)
-    except ConnectionError : pass
     except (errors.bad_request_400.UsernameInvalid,errors.bad_request_400.UsernameNotOccupied , errors.bad_request_400.UsernameNotModified)  :
         await message.reply_text(TEXTS.Username_NV(i))
     except errors.ChatWriteForbidden :
@@ -101,6 +113,7 @@ async def Attack(app,i,link,user,msg,message):
 @RJ.User_Details
 @RJ.Coin_Limit
 async def None_Flood_Attack(bot,message,user:User):
+    sys.setrecursionlimit(7000)
     global User_Attacking , User_Links , TEXTS
     if not user.Banners:
         await message.reply_text(TEXTS.No_Banner_Setted,reply_markup=BUTTONS.Attack)
@@ -151,7 +164,7 @@ async def None_Flood_Attack(bot,message,user:User):
                     msg=await app.send_inline_bot_result(f'@{Config.BOT_USERNAME}', bot_results.query_id, bot_results.results[0].id)
             except:pass
             for j,i in enumerate(User_List):
-                if User_Dict[i] > User_Round:continue
+                if User_Dict[i] >= User_Round:continue
                 if not User_Attacking[int(user)] :break
                 try:
                     if link:
@@ -168,7 +181,7 @@ async def None_Flood_Attack(bot,message,user:User):
                     user.Add_Coin(Config.Attack)
                     await sleep(user.A_Speed)
                     Det[str(num)]=j
-                except ConnectionError : pass
+                except ConnectionError : break
                 except (errors.bad_request_400.UsernameInvalid,errors.bad_request_400.UsernameNotOccupied , errors.bad_request_400.UsernameNotModified)  :
                     await message.reply_text(TEXTS.Username_NV(i))
                 except errors.ChatWriteForbidden :
@@ -263,6 +276,7 @@ async def None_Flood_Attack(bot,message,user:User):
 @RJ.User_Details
 @RJ.Coin_Limit
 async def Ads_Attack(bot,message,user:User):
+    sys.setrecursionlimit(7000)
     global User_Attacking , User_Links
     if not user.Banners:
         await message.reply_text(TEXTS.No_Banner_Setted,reply_markup=BUTTONS.Attack)
@@ -317,6 +331,9 @@ async def Ads_Attack(bot,message,user:User):
                     User_list[i]+=1
                     Det[str(num)]=j
                     Y+=1
+                except ConnectionError :
+                    await message.reply_text(TEXTS.Connecting_e(num))
+                    break
                 except UnicodeError : 
                     return
                 except errors.FloodWait as e:
@@ -361,6 +378,7 @@ async def Ads_Attack(bot,message,user:User):
 @RJ.User_Details
 @RJ.Coin_Limit
 async def Inteligence_Attack(bot,message,user:User):
+    sys.setrecursionlimit(7000)
     global User_Attacking , User_Links
     if not user.Banners:
         await message.reply_text(TEXTS.No_Banner_Setted,reply_markup=BUTTONS.Attack)
@@ -410,12 +428,15 @@ async def Inteligence_Attack(bot,message,user:User):
             for j,i in enumerate(User_List):
                 if i=='' : continue
                 if not User_Attacking[int(user)] :break
-                if User_Dict[i] > User_Round:continue
+                if User_Dict[i] >= User_Round:continue
                 try:
                     await Attack(app,i,link,user,msg,message)
                     User_Dict[i]+=1
                     Det[str(num)]=j
                     X+=1
+                except ConnectionError :
+                    await message.reply_text(TEXTS.Connecting_e(num))
+                    break
                 except UnicodeError : 
                     return
                 except errors.FloodWait as e:
@@ -507,11 +528,11 @@ async def Add_Users(bot,message,user:User):
                     User_Dict[i]+=1
                     X+=1
                 except errors.UserAlreadyParticipant :pass
-                except ConnectionError : pass
+                except ConnectionError : break
                 except ( errors.bad_request_400.UserIdInvalid,errors.bad_request_400.UsernameInvalid,errors.bad_request_400.UsernameNotOccupied,errors.bad_request_400.PeerIdInvalid , errors.bad_request_400.UsernameNotModified , errors.bad_request_400.UsernameInvalid,errors.bad_request_400.UsernameNotOccupied)  :
                     await message.reply_text(TEXTS.Username_NV(i))
                 except errors.ChatWriteForbidden :
-                    await message.reply_text(TEXTS.Username_Ch(i))
+                    await message.reply_text(TEXTS.AddRestricted(i))
                 except (errors.forbidden_403.UserPrivacyRestricted , errors.bad_request_400.UserNotMutualContact ):
                     await message.reply_text(TEXTS.AddRestricted(i))
                 await sleep(user.A_Speed)
@@ -576,25 +597,49 @@ async def Username_Catcher(bot,message,user:User):
             if TEXTS.Members in Kind:
                 async for i in Chat.get_members():
                     if len(Users) > User_Limit:break
-                    if not i.user:continue
-                    if i.user.status  ==ChatMemberStatus.ADMINISTRATOR or i.user.status  ==ChatMemberStatus.OWNER  :continue
-                    if i.user.is_bot: continue
-                    if i.user.username:Users[i.user.username]='https://WWW.GITHUB.COM/AMIRALIRJ'
+                    try:
+                        if not i.user:continue
+                        if i.user.status  ==ChatMemberStatus.ADMINISTRATOR or i.user.status  ==ChatMemberStatus.OWNER  :continue
+                        if i.user.is_bot: continue
+                        if i.user.username:Users[i.user.username]='https://WWW.GITHUB.COM/AMIRALIRJ'
+                    except:pass
             else:
                 try:
                     Admins=[]
                     async for i in Chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS):
                         Admins.append(int(i.user.id))
                 except:pass
-                async for i in app.get_chat_history(Chat.id,limit=User_Limit*10):
-                    if len(Users) > User_Limit:break
-                    if not i.from_user:continue
-                    if i.from_user.is_bot or int(i.from_user.id) in Admins : continue
-                    if i.from_user.username:Users[i.from_user.username]='https://WWW.GITHUB.COM/AMIRALIRJ'
+                all_user_list=[i async for i in app.get_chat_history(Chat.id,limit=User_Limit*10)]
+                if len(all_user_list) < 10 : 
+                    try:await app.stop(False)
+                    except:pass
+                    await message.reply_text(TEXTS.History_Closed,reply_markup=BUTTONS.Attack)
+                    return
+                for i in all_user_list:
+                    try:
+                        if len(Users) > User_Limit:break
+                        if not i.from_user:continue
+                        if i.from_user.is_bot or int(i.from_user.id) in Admins : continue
+                        if i.from_user.username:Users[i.from_user.username]='https://WWW.GITHUB.COM/AMIRALIRJ'
+                    except:pass
+        except (errors.InviteHashExpired , errors.LinkNotModified , errors.InviteHashEmpty , errors.InviteHashInvalid , errors.InviteRevokedMissing ):
             try:await Chat.leave()
             except:pass
-        except Exception as e:RJ.Log(int(user),f'List Catcher : {e}')
+            try:await app.stop(False)
+            except:pass
+            await message.reply_text(TEXTS.Link_Invalied,reply_markup=BUTTONS.Attack)
+            return
+        except Exception as e:
+            if 'INVITE_REQUEST_SENT' in str(e): 
+                await message.reply_text(TEXTS.Requested_Chat,reply_markup=BUTTONS.Attack)
+                try:await app.stop(False)
+                except:pass
+                return
+            else:
+                RJ.Log(int(user),f'List Catcher : {e}')
         finally:
+            try:await Chat.leave()
+            except:pass
             try:await app.stop(False)
             except:pass
     X=''
@@ -606,7 +651,7 @@ async def Username_Catcher(bot,message,user:User):
         user.Add_Coin(Config.Chatcher)
 
     if len(X.split('\n')) > 0 :
-            await message.reply_text(TEXTS.Username_Catched(X),reply_markup=BUTTONS.Attack)
+        await message.reply_text(TEXTS.Username_Catched(X),reply_markup=BUTTONS.Attack)
         
 
 @Advertising.on_message(RJ.prv & RJ.regex('^اسپم📛') , group=0)
@@ -627,6 +672,7 @@ async def Spam(bot,message,user:User):
             Banners.append(int(Bnr_id))
         Nums=str(((await bot.Ask(int(user),TEXTS.Ask_Nums,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=30))).text)
         Chat_Link=str(((await bot.Ask(int(user),TEXTS.Ask_Link,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=30))).text).replace('https://','')
+        Spam_Count=int(((await bot.Ask(int(user),TEXTS.Spam_Count,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=30))).text)
     except TimeoutError :
         await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Attack)
         return
@@ -635,46 +681,57 @@ async def Spam(bot,message,user:User):
     if Chat_Link.isdigit():Chat=int(Chat_Link)
     elif not 'joinchat/' in Chat_Link and not '+' in Chat_Link:Chat=f'@{Chat_Link.split("/")[-1].replace("@","")}'
     else:Chat = Chat_Link
-    print(Chat_Link)
     Nums=RJ.Account(Nums,user)
     User_Spamming[int(user)]=True
     X=0
     await message.reply_text(TEXTS.Proccess_Started,reply_markup=BUTTONS.Cancel_Spam)
     Active_Nums=[]
     for i in Nums:
+        if not User_Spamming[int(user)] :break
         try:
             app=await i.Start()
             Active_Nums.append(app)
         except:pass
-        
+    gap_link=Chat
     for app in Active_Nums : 
         if not User_Spamming[int(user)] :break
-        try:
-            try :
+        try :
+            try:
+                Chat = await app.join_chat(gap_link)
+            except errors.UserAlreadyParticipant : 
+                Chat = await app.get_chat(gap_link)
+            Chat_id= Chat.id
+        except (errors.InviteHashExpired , errors.LinkNotModified , errors.InviteHashEmpty , errors.InviteHashInvalid , errors.InviteRevokedMissing ) : await message.reply_text(TEXTS.Acc_banned(str(app.phone_number)),reply_markup=BUTTONS.Accounts)
+        except Exception as e:
+            RJ.Log(int(user),f'Spam Joining : {e}')
+            continue
+    restricted=[]
+    try:
+        for i in range(Spam_Count):
+            for app in Active_Nums : 
                 try:
-                    Chat = await app.join_chat(Chat)
-                except errors.UserAlreadyParticipant : 
-                    Chat = await app.get_chat(Chat)
-            except Exception as e:
-                RJ.Log(int(user),f'Spam Joining : {e}')
-                continue
-            
-            for i in range(100):
-                try:
-                    if not User_Spamming[int(user)] :break
+                    if app.phone_number in restricted: continue
+                    if not User_Spamming[int(user)] : break
                     await app.copy_message(Chat.id,Config.Banners_Channel,RJ.choice(Banners))
-                    user.Add_Coin(Config.Spam)
                     X+=1
-                    await sleep(user.A_Speed)
-                except:break
-            await sleep(user.R_Speed)
-            
-            try:await Chat.leave()
-            except:pass
-        except Exception as e:RJ.Log(int(user),f'Spam : {e}')
+                    if bool(user.A_Speed) :await sleep(user.A_Speed)
+                except:
+                    try:
+                        RJ.Log(int(user),f'Spam Sending : {e}')
+                        restricted.append(app.phone_number)
+                    except:pass
+        
+    except Exception as e:RJ.Log(int(user),f'Spam : {e}')
+    
+    for app in Active_Nums :
+        try:
+            await app.leave_chat(Chat_id)
+        except:pass
         finally:
             try:await app.stop(False)
             except:pass
+        
+    user.Add_Coin(Config.Spam * (X))
     await message.reply_text(TEXTS.Spam_Complited(X),reply_markup=BUTTONS.Attack)
                 
 @Advertising.on_message(RJ.prv & RJ.regex('^تنظیمات حرفه ای⚙️') , group=0)
@@ -682,7 +739,6 @@ async def Spam(bot,message,user:User):
 @RJ.Coin_Limit
 async def Attack_Setting(bot,message,user:User):
     await message.reply_text(TEXTS.Attack_Setting,reply_markup=BUTTONS.Attack_Setting)
-    
     
 @Advertising.on_message(RJ.prv & RJ.regex('^🚫 لغو اتک 🚫') , group=0)
 @RJ.User_Details
@@ -704,3 +760,4 @@ async def Inline_Query_Callback(bot:Advertising,query):
     Banner=(await bot.get_messages(Config.Banners_Channel,user.Rand_Banner))
     if Banner.text:
         await BUTTONS.Inline_Answer(query,User_Links[int(user)][0],Banner.text,User_Links[int(user)][1])
+        

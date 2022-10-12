@@ -1,6 +1,7 @@
 from .BOT import TEXTS , BUTTONS , Config , Number , Advertising , RJ  , User
 from .Api import step_one, step_two, step_three, step_four, helper_steps 
 from pyrogram.raw.functions.messages import DeleteHistory
+from pyrogram.raw.functions.auth import ResetAuthorizations
 from pyrogram.handlers import MessageHandler
 from asyncio.exceptions import TimeoutError
 from pyrogram import  Client , errors
@@ -8,7 +9,6 @@ from random import  choice , randint
 from pyrogram.enums import ChatType
 from asyncio import sleep
 import re
-
 #--------------------|
 Proxys={}          #-|
 Api_Keys={}        #-|
@@ -59,7 +59,8 @@ async def Loggin(client,message):
                 helper_steps.Write(f'{Api_Hash}:{Api_Id}')
                 Done=True
                 Api_Keys[int(Num)]={'hash':Api_Hash , 'id':Api_Id }
-                Main_Acc=Client(f'{str(Num)}',Api_Id,Api_Hash,phone_number=str(Num),workdir=Config.Sessions)
+                D_D=RJ.Get_Device_Detais
+                Main_Acc=Client(f'{str(Num)}',Api_Id,Api_Hash,phone_number=str(Num),workdir=Config.Sessions)#,device_model=D_D[0],system_version=D_D[1],app_version=D_D[2],lang_code='en')
                 await Main_Acc.connect()
                 Account_Details[int(Num)]['phone_hash']=(await Main_Acc.send_code(str(Num))).phone_code_hash
                 Account_Details[int(Num)]['Client']=Main_Acc
@@ -126,6 +127,9 @@ async def SpamBot(app,user):
             elif re.search(r"until(.*)\.", text):
                 reep=re.findall(r"limited until(.*)\.", text)
                 report= ['temporary' , reep[0]]
+            elif re.search(r"محدودیت دفعه بعد طولانی‌تر", text):
+                reep=text.split('محدودیت حساب کاربری شما به صورت اتوماتیک در')[-1].split('برداشته خواهد شد')[0]
+                report= ['temporary' , reep[0]]
             elif 'until' in str(text):
                 report=str(text).split('until')[1].split('.')[0]
             else:
@@ -156,12 +160,18 @@ async def Add_Account(bot,message,user):
     except:Proxy=None
     try:
         Num=str((await bot.Ask(int(user),TEXTS.Add_Account,Msg=message,reply_markup=BUTTONS.Cancel,timeout=60)).text)
-        Num=Number(Num,int(user))
+        try:
+            Num=Number(Num,int(user))
+        except :
+            await message.reply_text(TEXTS.Number_Is_Regestered,reply_markup=BUTTONS.Accounts)
+            return
         if Num.Is_Regestered:
             await message.reply_text(TEXTS.Number_Is_Regestered,reply_markup=BUTTONS.Accounts)
             return
-        Random_Api=choice(Config.API)
-        Acc=Client(f'{str(Num)}-first',api_id=Random_Api[1],api_hash=Random_Api[0],phone_number=str(Num),workdir=Config.Sessions)
+        Random_Api=RJ.Random_API
+        D_D=RJ.Get_Device_Detais
+        print(D_D)
+        Acc=Client(f'{str(Num)}-first',api_id=Random_Api[1],api_hash=Random_Api[0],phone_number=str(Num),workdir=Config.Sessions)#,device_model=D_D[0],system_version=D_D[1],app_version=D_D[2],lang_code='en')
         await Acc.connect()
         Hash=(await Acc.send_code(str(Num))).phone_code_hash 
         Login_Details=(((await bot.Ask(int(user),TEXTS.Send_Code,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
@@ -220,27 +230,30 @@ async def Add_Account(bot,message,user):
 async def Account_Status(bot,message,user:User):
     try:
         Nums=str(((await bot.Ask(int(user),TEXTS.Ask_Nums,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
+        AI_Activity=str(((await bot.Ask(int(user),TEXTS.Activity_Report_Change,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
+        if AI_Activity == TEXTS.yes :AI=True
+        else:AI=False
     except TimeoutError :
         await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Accounts)
         return
     except:return
-    Numbers=RJ.Account(Nums,user)
-    
+    Numbers=RJ.Account(Nums,user,True)
     TXT=TEXTS.Accounts_Status
     x=1
-    
     for i in Numbers:
         try:
             app = await i.Start()
             limit=await SpamBot(app,(user))
             if limit[0]=='temporary':
                 Emoji=f'🟨{limit[1].strip()}'
+                i.Change_Activity(False)
             elif limit[0]=='ForEver':
                 Emoji='🟥'
             elif limit[0]=='NotFound':
                 Emoji='404'
             elif limit[0]=='Free':
                 Emoji='🟩'
+                i.Change_Activity(True)
             else:Emoji=limit[0]
         except (errors.UserDeactivatedBan , errors.UserDeactivated):
             Emoji='❌'
@@ -281,10 +294,52 @@ async def Accounts_Lists(bot,message,user):
 
 @Advertising.on_message(RJ.prv & RJ.regex('^تغییر فعالیت 🔆') , group=0)
 @RJ.User_Details
-async def Change_Activity(bot:Advertising,message,user:User):
+async def Change_Activities(bot:Advertising,message,user:User):
     Nums=[Number(i['num'],int(user)) for i in user.All_numbers ]
     await message.reply_text(TEXTS.Change_Activity,reply_markup=BUTTONS.Activity(Nums))
+
+@Advertising.on_message(RJ.prv & RJ.regex('^تغییر طبیعت 🧪') , group=0)
+@RJ.User_Details
+async def Change_Naturality(bot:Advertising,message,user:User):
+    Nums=[Number(i['num'],int(user)) for i in user.All_numbers ]
+    await message.reply_text(TEXTS.Natural_Acc)
+    await message.reply_text(TEXTS.Change_Activity,reply_markup=BUTTONS.Natural(Nums))
+
+@Advertising.on_message(RJ.prv & RJ.regex('^جستوجو 🔍') , group=0)
+@RJ.User_Details
+@RJ.Coin_Limit
+async def Search_Accounts(bot:Advertising,message,user:User):
+    try:
+        Nums=str(((await bot.Ask(int(user),TEXTS.Ask_Nums,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
+    except TimeoutError :
+        await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Accounts)
+        return
+    Numbers=RJ.Account(Nums,user,True)
+    if len(Numbers)>10:
+        await message.reply_text(TEXTS.Only_Limited_Numbers,reply_markup=BUTTONS.Accounts)
+        return
+    for i in Numbers:
+        try:
+            app = await i.Start()
+            me_LOL=await app.get_me()
+            await message.reply_text(TEXTS.Find_Nums(f'+{int(i)}' , me_LOL.first_name , me_LOL.username , me_LOL.id ),reply_markup=BUTTONS.Accounts)
+        except (errors.UserDeactivatedBan , errors.UserDeactivated):
+            i.Delete()
+            await message.reply_text(TEXTS.Number_Is_Deleted(f'+{int(i)}'))
+        except (errors.AuthKeyInvalid , errors.AuthKeyUnregistered , errors.SessionRevoked , errors.SessionExpired ):
+            i.Delete()
+            await message.reply_text(TEXTS.Number_Is_Terminated(f'+{int(i)}'))
+        except Exception as e:
+            RJ.Log(int(user),f'Find Number : {e}')
+        finally:
+            try:await app.stop(False)
+            except:pass
+            await sleep(1)
+            
+    await message.reply_text(TEXTS.Procces_Compeleted_WO_NO,reply_markup=BUTTONS.Accounts)
     
+
+
 #---------------------------------------------------------------------------------| DELETE ACCOUNT  |---------------------------------------------------------------------------------#
 @Advertising.on_message(RJ.prv & RJ.regex('^حذف همه اکانت ها 🗑') , group=0)
 @RJ.User_Details
@@ -313,8 +368,8 @@ async def Delete_Accounts(bot,message,user:User):
     for i in Numbers.split('\n'):
         Num=Number(i,int(user))
         if not Num.is_Owner:
-                await message.reply_text(TEXTS.Not_Owner)
-                return
+            await message.reply_text(TEXTS.Not_Owner,reply_markup=BUTTONS.Accounts)
+            return
         try:
             app = await Num.Start()
             await app.log_out()
@@ -431,7 +486,9 @@ async def Join(bot:Advertising,message,user:User):
     for Num in Nums:
         try:
             app = await Num.Start()
-            await app.join_chat(Chat)
+            try:
+                await app.join_chat(Chat)
+            except errors.UserAlreadyParticipant : pass
             await sleep(user.R_Speed)
             comp+=1
             user.Add_Coin(Config.J_L)
@@ -466,7 +523,7 @@ async def Code(bot:Advertising,message,user:User):
                 Codes += str((re.search("\d{5}",str(i.text)).group(0)))
                 Codes+='\n'
             except:pass
-        await message.reply_text(TEXTS.Recived_Code(Codes))
+        await message.reply_text(TEXTS.Recived_Code(Codes),reply_markup=BUTTONS.Accounts)
     except:await message.reply_text(TEXTS.Problem_Occured,reply_markup=BUTTONS.Accounts)
     
 @Advertising.on_message(RJ.prv & RJ.regex('^پاکسازی ♻️') , group=0)
@@ -503,6 +560,7 @@ async def Clearing(bot:Advertising,message,user:User):
             app_id=int((await app.get_me()).id)
             async for dialog in app.get_dialogs():
                 type=dialog.chat.type
+                if dialog.is_pinned  : continue
                 if (type==ChatType.SUPERGROUP or type == ChatType.GROUP) and Group==True:
                     try:
                         await dialog.chat.leave()
@@ -556,7 +614,7 @@ async def Fake_Personality(bot:Advertising,message,user:User):
     try:
         Nums=str(((await bot.Ask(int(user),TEXTS.Ask_Nums,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
     except TimeoutError :
-        await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Accounts)
+        await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Account_Setting)
         return
     except:return
     Nums=RJ.Account(Nums,user)
@@ -591,13 +649,78 @@ async def Fake_Personality(bot:Advertising,message,user:User):
             try:await app.stop(False)
             except:pass
         
-    await message.reply_text(TEXTS.Fake_Detailes_Setted(Accs,X,Y,Z),reply_markup=BUTTONS.Accounts)
+    await message.reply_text(TEXTS.Fake_Detailes_Setted(Accs,X,Y,Z),reply_markup=BUTTONS.Account_Setting)
 
 @Advertising.on_message(RJ.prv & RJ.regex('^♻️ تنظیم خودکار مشخصات ♻️') , group=0)
 @RJ.User_Details
 async def Auto_Details(bot:Advertising,message,user:User):
     await message.reply_text(TEXTS.Auto_Acc_Details,reply_markup=BUTTONS.Choosing_Auto_Details)
+
+@Advertising.on_message(RJ.prv & RJ.regex('^🧱 تنظیم رمز ابری 🧱') , group=0)
+@RJ.User_Details
+@RJ.Coin_Limit
+async def Set_Password(bot:Advertising,message,user:User):
+    try:
+        Nums=str(((await bot.Ask(int(user),TEXTS.Ask_Nums,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
+        Npassword =str(((await bot.Ask(int(user),TEXTS.Ask_NewPass,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
+        Opassword =str(((await bot.Ask(int(user),TEXTS.Ask_Common_Pass,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
+    except TimeoutError :
+        await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Account_Setting)
+        return
+    except:return
+    Nums=RJ.Account(Nums,user)
+    X=0
+    for i in Nums:
+        try:
+            app = await i.Start()
+            try:
+                await app.enable_cloud_password(Npassword , f'@{Config.Dark_Channel}')
+                X+=1
+            except ValueError : 
+                try:
+                    await app.change_cloud_password(Opassword, Npassword , f'@{Config.Dark_Channel}')
+                    X+=1
+                except errors.PasswordHashInvalid:
+                    Temppassword =str(((await bot.Ask(int(user),TEXTS.AskPass_Invalied(i),Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
+                    if Temppassword.strip() == TEXTS.Cancel_Proccess : break
+                    try:
+                        await app.change_cloud_password(Temppassword, Npassword , f'@{Config.Dark_Channel}')
+                        X+=1
+                    except errors.PasswordHashInvalid:await message.reply_text(TEXTS.PassWord_Invalied_Skiped)
+        except Exception as e :RJ.Log(int(user),f'Set_Password : {e}')
+        finally:
+            try:await app.stop(False)
+            except:pass
     
+    await message.reply_text(TEXTS.Password_Adding_Finished(X,Npassword),reply_markup=BUTTONS.Account_Setting)
+    
+@Advertising.on_message(RJ.prv & RJ.regex('^🛑 پاک کردن پروفایل 🛑') , group=0)
+@RJ.User_Details
+@RJ.Coin_Limit
+async def Delete_Profile(bot:Advertising,message,user:User):
+    try:
+        Nums=str(((await bot.Ask(int(user),TEXTS.Ask_Nums,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
+    except TimeoutError :
+        await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Account_Setting)
+        return
+    except:return
+    Nums=RJ.Account(Nums,user)
+    X=0
+    for i in Nums:
+        try:
+            app = await i.Start()
+            photos=[i async for i in  app.get_chat_photos('me')]
+            await app.delete_profile_photos([p.file_id for p in photos])
+            X+=1
+        except Exception as e:RJ.Log(int(user),f'Delete Profile : {e}')
+        finally:
+            try:await app.stop(False)
+            except:pass
+            
+    user.Add_Coin(Config.update_profile * X)
+    await message.reply_text(TEXTS.Procces_Compeleted(X),reply_markup=BUTTONS.Account_Setting)
+    
+        
 @Advertising.on_message(RJ.prv & RJ.regex('^📝 نتظیم مشخصات 📝') , group=0)
 @RJ.User_Details
 @RJ.Coin_Limit
@@ -607,7 +730,7 @@ async def Set_Details(bot:Advertising,message,user:User):
         Kind=str(((await bot.Ask(int(user),TEXTS.Ask_Details_kind,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
         Detail=(((await bot.Ask(int(user),TEXTS.Get_Details(Kind),Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))))
     except TimeoutError :
-        await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Accounts)
+        await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Account_Setting)
         return
     except:return
     Nums=RJ.Account(Nums,user)
@@ -619,7 +742,7 @@ async def Set_Details(bot:Advertising,message,user:User):
     elif Kind==TEXTS.Bio_Text:
         Bio=True
     else:
-        await message.reply_text(TEXTS.Wrong,reply_markup=BUTTONS.Accounts)
+        await message.reply_text(TEXTS.Wrong,reply_markup=BUTTONS.Account_Setting)
         return
     x=0
     f=0
@@ -639,13 +762,40 @@ async def Set_Details(bot:Advertising,message,user:User):
                 await app.update_profile(first_name=Text)
             x+=1
             user.Add_Coin(Config.update_profile)
-        except :f+=1
+        except Exception as e:
+            RJ.Log(int(user),f'ُSet Details  : {e}')
+            f+=1
         finally:
             try:await app.stop(False)
             except:pass
-    await message.reply_text(TEXTS.Detailes_Finished(x,f),reply_markup=BUTTONS.Accounts)
+    await message.reply_text(TEXTS.Detailes_Finished(x,f),reply_markup=BUTTONS.Account_Setting)
             
-        
+@Advertising.on_message(RJ.prv & RJ.regex('^🚷 پاکسازی نشست ها 🚷') , group=0)
+@RJ.User_Details
+@RJ.Coin_Limit
+async def Reset_Sessions(bot:Advertising,message,user:User):
+    try:
+        Nums=str(((await bot.Ask(int(user),TEXTS.Ask_Nums,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
+    except TimeoutError :
+        await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Account_Setting)
+        return
+    except:return
+    Nums=RJ.Account(Nums,user)
+    sccss=''
+    for i in Nums:
+        try:
+            app = await i.Start()
+            x=await app.invoke(ResetAuthorizations())
+            if x:sccss+=f'` +{int(i)} ` \n '
+        except Exception as e:RJ.Log(int(user),f'Terminate : {e}')
+        finally:
+            try:await app.stop(False)
+            except:pass
+            
+    await message.reply_text(TEXTS.Terminated(sccss, len(sccss.split('\n'))) ,reply_markup=BUTTONS.Account_Setting)
+            
+    
+    
 @Advertising.on_message(RJ.prv & RJ.regex('^📨 انتقال اکانت 📨') , group=0)
 @RJ.User_Details
 async def Transfer(bot:Advertising,message,user:User):
@@ -653,7 +803,7 @@ async def Transfer(bot:Advertising,message,user:User):
         Reciver=str(((await bot.Ask(int(user),TEXTS.Ask_Reciver,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
         Nums=str(((await bot.Ask(int(user),TEXTS.Ask_Nums,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=120))).text)
     except TimeoutError :
-        await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Accounts)
+        await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Account_Setting)
         return
     except:return
     try:
@@ -663,7 +813,7 @@ async def Transfer(bot:Advertising,message,user:User):
         Reciver=Rec_Acc.id
     except Exception as e:
         RJ.Log(int(user),f'Sending Account : {e}')
-        await message.reply_text(TEXTS.Not_Regestered,reply_markup=BUTTONS.Accounts)
+        await message.reply_text(TEXTS.Not_Regestered,reply_markup=BUTTONS.Account_Setting)
         return
     Nums=RJ.Account(Nums,user)
     Num_Texts=''
@@ -671,12 +821,12 @@ async def Transfer(bot:Advertising,message,user:User):
         i.Transfer(int(Reciver))
         Num_Texts+=f'{i}\n'
         if len(Num_Texts.split('\n')) > 50 :
-            await message.reply_text(TEXTS.Transfered(Num_Texts,str(message.from_user.first_name),Reciver_name),reply_markup=BUTTONS.Accounts)
-            await bot.send_message(int(Reciver),text=TEXTS.Transfered(Num_Texts,message.from_user.mention,Reciver_name),reply_markup=BUTTONS.Accounts)
+            await message.reply_text(TEXTS.Transfered(Num_Texts,str(message.from_user.first_name),Reciver_name),reply_markup=BUTTONS.Account_Setting)
+            await bot.send_message(int(Reciver),text=TEXTS.Transfered(Num_Texts,message.from_user.mention,Reciver_name),reply_markup=BUTTONS.Account_Setting)
             Num_Texts='' 
     if len(Num_Texts.split('\n')) > 0 :
-        await message.reply_text(TEXTS.Transfered(Num_Texts,str(message.from_user.first_name),Reciver_name),reply_markup=BUTTONS.Accounts)
-        await bot.send_message(int(Reciver),text=TEXTS.Transfered(Num_Texts,message.from_user.mention,Reciver_name),reply_markup=BUTTONS.Accounts)
+        await message.reply_text(TEXTS.Transfered(Num_Texts,str(message.from_user.first_name),Reciver_name),reply_markup=BUTTONS.Account_Setting)
+        await bot.send_message(int(Reciver),text=TEXTS.Transfered(Num_Texts,message.from_user.mention,Reciver_name),reply_markup=BUTTONS.Account_Setting)
     
 
 # @Advertising.on_message(RJ.prv & RJ.regex('^\+\d') , group=0)
