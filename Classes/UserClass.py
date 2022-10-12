@@ -16,9 +16,19 @@ class User:
         self.A_Speed = float(self.__UserBase.Show_A_Speed)   #User_Details['Attack_speed']
         self.R_Speed = float(self.__UserBase.Show_R_Speed )  #User_Details['Round_speed']
         self.Auto_Api = int(self.__UserBase.Show_R_Speed)#User_Details['Auto_api']
-    
-    def Add_Coin(self,Amount):
+        self.Membership = str(self.__UserBase.Show_Membership)
+        self.Active_Membership=bool(self.__UserBase.Have_Membership)
+        
+    def Add_Coin(self,Amount,admin=False):
+        if not admin and self.Active_Membership :return True
         self.__UserBase.addcoin(int(Amount))
+        return True
+    
+    def Add_Membership(self,date):
+        return self.__UserBase.Add_Membership(int(date))
+    
+    def Set_0(self):
+        self.__UserBase.addcoin( (self.Coin *-1) )
         return True
     
     @property

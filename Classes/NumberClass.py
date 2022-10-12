@@ -1,5 +1,5 @@
 from Data.DataBase import DataBase
-from pyrogram import Client
+from pyrogram import Client , errors
 
 class Number:
     DataBase=DataBase
@@ -15,6 +15,7 @@ class Number:
             self.session=detail[3]
             self.active=bool(int(detail[5]))
             self.Owner=detail[4]
+            self.natural=bool(int(detail[6]))
             self.Details={'num' : f'+{self.Number}' , 'api_id' : detail[2] , 'api_hash' : detail[1] , 'session' : detail[3] ,'id' : detail[4] }
     
     def Add_Number(self,Api_id,Api_hash,Session):
@@ -22,6 +23,9 @@ class Number:
         
     def Change_Activity(self,active:bool):
         self.__NumberBase.Activity(active)
+    
+    def Change_Natural(self,natural_s:bool):
+        self.__NumberBase.Natural(natural_s)
         
     def Transfer(self,New_owner:int):
         if self.is_Owner:
@@ -36,6 +40,11 @@ class Number:
         if self.active:return '🟢'
         else:return '🔴'
     
+    @property
+    def Natural_Emoji(self):
+        if self.natural:return '🟢'
+        else:return '🔴'
+        
     def Delete(self):
         if self.is_Owner:
             self.__NumberBase.Delete_Number()
@@ -50,6 +59,13 @@ class Number:
         return self.Details
         
     async def Start(self):
-        app=Client(name=f'S{self.Number}S',session_string  =self.session,api_id=self.api_id , api_hash=self.api_hash , sleep_threshold=5 , in_memory=True)
-        await app.start()
+        app=Client(name=f'S{self.Number}S',session_string  =self.session,api_id=self.api_id , api_hash=self.api_hash , sleep_threshold=5 , in_memory=True , phone_number=f'+{self.Number}', no_updates=True)
+        try:
+            await app.start()
+        except ConnectionError as e : 
+            if 'allready' in str(e):pass
+        # except (errors.UserDeactivatedBan , errors.UserDeactivated):
+        #     self.Delete()
+        # except (errors.AuthKeyInvalid , errors.AuthKeyUnregistered , errors.SessionRevoked , errors.SessionExpired ):
+        #     self.Delete()
         return app
