@@ -6,13 +6,14 @@ Start=ReplyKeyboardMarkup([['اکانت ها👤','اتک ⚠️'],
                                 ,['اشتراک 🔋']
                                 ,['پشتیبانی 👨‍💻']],resize_keyboard =True)
 
-Management=ReplyKeyboardMarkup([['دادن سکه 🪙','انقال اکانت 👻'],['نجوا 📩' , 'ادمین گیر 👀','اطلاعات 🔭'],['پنل اصلی ⚙️']],resize_keyboard =True)
+Management=ReplyKeyboardMarkup([['دادن سکه 🪙', 'اشتراک روزانه 📅'],['انقال اکانت 👻','فرایند ها 🔆'],['نجوا 📩' , 'ادمین گیر 👀','اطلاعات 🔭'],['پنل اصلی ⚙️']],resize_keyboard =True)
 
 Attack= ReplyKeyboardMarkup([['اتک🔰',
         'بنر 📩'],
         ['اسپم📛',
         'لیست گیر🚸'],
-        ['تنظیمات حرفه ای⚙️','قوی ترین اتکر ⚔️🔥'],
+        ['تنظیمات حرفه ای⚙️'],
+        ['⭐ رتبه من ⭐','قوی ترین اتکر ⚔️🔥'],
         ['بازگشت 🔙']],resize_keyboard =True) 
 
 Main_Attack=ReplyKeyboardMarkup([
@@ -36,9 +37,11 @@ Accounts=ReplyKeyboardMarkup([['وضعیت اکانت ها 🗂️' ,
     ['تغییر فعالیت 🔆'],
         ['ثبت اکانت 📥',
         'حذف اکانت 🗑'],
+        ['تغییر طبیعت 🧪'],
         ['⚙️ تنظیمات اکانت' , 
-        '🤖 استارت ربات'],[
-            'leave 🚨' 
+        '🤖 استارت ربات'],
+        ['جستوجو 🔍'] ,
+         ['leave 🚨' 
             , 'join 🚨'
         ],['گرفتن کد 🗳' , 'پاکسازی ♻️'],
         ['راهنما ❓',
@@ -50,13 +53,19 @@ Account_Deleting=ReplyKeyboardMarkup([[
         ['حذف ریپورت شده ها 🔇'],
     ['برگشت 🔙']],resize_keyboard =True)
 
-Account_Setting=ReplyKeyboardMarkup([[
-    '♻️ تنظیم خودکار مشخصات ♻️'],['🔱 هویت سازی 🔱'],
+Account_Setting=ReplyKeyboardMarkup([
+    ['♻️ تنظیم خودکار مشخصات ♻️','🧱 تنظیم رمز ابری 🧱'],
+    ['🛑 پاک کردن پروفایل 🛑'],
+    ['🔱 هویت سازی 🔱' , '🚷 پاکسازی نشست ها 🚷'],
     ['📨 انتقال اکانت 📨', '📝 نتظیم مشخصات 📝'] ,
     ['برگشت 🔙']],resize_keyboard =True)
 
-Seen=ReplyKeyboardMarkup([['ری اکشن 🤩','لایک ♥️'],
+Seen=ReplyKeyboardMarkup([
+                          ['سین 👁‍🗨','لایک ♥️'],
+                          ['ری اکشن 🤩'],
                           ['بلاک 🔒','انبلاک 🔓'],
+                          ['ریپورت کانال 🪓','ریپورت پیام 🔪'],
+                          ['اکو ایردراپ 🔊💥'],
                           ['بازگشت 🔙']],resize_keyboard =True) 
 
 #--------------------------------------------------------------------------------------------------------------------------
@@ -88,16 +97,32 @@ def Speed_Inline( Model)  :
 
 def Activity(all,page=0):
     Inlines=[]
-    page*=2
     li=[]
     for j,i in enumerate(all[page:]):
         if str(i) not in li :
             Inlines.append([InlineKeyboardButton(f'{i.Activity_Emoji}{i}', callback_data=f'Change_Activity {int(i)} {page}')])
             li.append(str(i))
         if j>=20:
+            Inlines.append([InlineKeyboardButton(f'🚀 همه روشن 🚀', callback_data=f'Change_Activity All_Accs 1')])
+            Inlines.append([InlineKeyboardButton(f'🚦 همه خاموش 🚦', callback_data=f'Change_Activity All_Accs 0')])
             Inlines.append([InlineKeyboardButton(f'⬅️ صفحه بعد ⬅️', callback_data=f'Next {page}')])
             return InlineKeyboardMarkup(Inlines) 
     return InlineKeyboardMarkup(Inlines) 
+
+def Natural(all,page=0):
+    Inlines=[]
+    li=[]
+    for j,i in enumerate(all[page:]):
+        if str(i) not in li :
+            Inlines.append([InlineKeyboardButton(f'{i.Natural_Emoji}{i}', callback_data=f'Change_Natural {int(i)} {page}')])
+            li.append(str(i))
+        if j>=20:
+            Inlines.append([InlineKeyboardButton(f'🚀 همه روشن 🚀', callback_data=f'Change_Natural All_Accs 1')])
+            Inlines.append([InlineKeyboardButton(f'🚦 همه خاموش 🚦', callback_data=f'Change_Natural All_Accs 0')])
+            Inlines.append([InlineKeyboardButton(f'⬅️ صفحه بعد ⬅️', callback_data=f'Next Nat {page}')])
+            return InlineKeyboardMarkup(Inlines) 
+    return InlineKeyboardMarkup(Inlines) 
+
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 async def Inline_Answer(inline_query,Channel,Banner,btn):
     await inline_query.answer(
@@ -109,4 +134,3 @@ async def Inline_Answer(inline_query,Channel,Banner,btn):
                 reply_markup=Attack_Inline(Channel,btn))],
         cache_time=1
     )
-
