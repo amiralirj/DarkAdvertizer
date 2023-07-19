@@ -18,6 +18,12 @@ class Data:
         self.con.commit()
         print('DataBase Has Successfully Loaded') 
     
+    
+    def Num_Owner(self,num):
+        self.c.execute('SELECT user_id FROM accounts where number=:numm',{'numm':num})
+        rows=self.c.fetchall()
+        return int(rows[0][0])
+    
     @property
     def All_Users(self):
         self.c.execute('SELECT User_id,Coins FROM Users')
@@ -64,6 +70,11 @@ class Data:
             self.c.execute(f'UPDATE Users set Coins=Coins+{int(Amount)} WHERE User_id=:user',{'user':int(self.User_id)})
             self.con.commit()
             
+        def Add_Sql_Membership(self,date):
+            self.c.execute(f'UPDATE Users SET Membership=:Membership WHERE User_id=:user',{'user':int(self.User_id),'Membership':date})
+            self.con.commit()
+            return date
+        
         def Add_Membership(self,date):
             membership=str(datetime.date.today() + datetime.timedelta(days=date))
             self.c.execute(f'UPDATE Users SET Membership=:Membership WHERE User_id=:user',{'user':int(self.User_id),'Membership':membership})

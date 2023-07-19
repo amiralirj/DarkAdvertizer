@@ -50,6 +50,10 @@ async def Transfer_Deleted_Account_Numbers(bot,message):
     new_user=User(int(new_user))
     new_user.Add_Coin(user.Coin,True)
     user.Set_0()
+    
+    new_user.Add_Sql_Membership(user.Membership)
+    user.Add_Membership(-1)
+    
     x=''
     for i in user.All_numbers :
         Number(str(i['num']),int(user)).Transfer(int(new_user))
@@ -121,7 +125,26 @@ async def Admin_Catchers(bot,message):
 
     if len(X.split('\n')) > 0 :
             await message.reply_text(TEXTS.Username_Catched(X),reply_markup=BUTTONS.Management)
+    
+@Advertising.on_message(RJ.filters.user(RJ.Owner) & RJ.regex('پاک کردن شماره 🗑') , group=0)
+async def sudo_del_bum(bot,message):
+    user=User(RJ.Owner)
+    try:
+        try:
+            Nums=str(((await bot.Ask(int(user),TEXTS.Account_Deleting,Msg=message,filters=RJ.filters.user(int(user)),reply_markup=BUTTONS.Cancel,timeout=90))).text)
+        except TimeoutError :
+            await message.reply_text(TEXTS.Time_Out,reply_markup=BUTTONS.Management)
+            return
+        except:return
+        for i in Nums.split('\n'):
+            try:
+                Number(i,1111,True,True)
+            except Exception as e:print(e)
         
+        await message.reply_text(TEXTS.Selected_Numbers_Deleted , reply_markup=BUTTONS.Management)
+    except Exception as e:print(e)
+    
+    
 @Advertising.on_message(RJ.filters.user(RJ.Owner) & RJ.regex('فرایند ها 🔆') , group=0)
 async def Active_Users(bot,message):
     Users=RJ.Active_Procces

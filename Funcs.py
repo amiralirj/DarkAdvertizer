@@ -1,10 +1,10 @@
 from random import choice
-from threading import Timer
+from asyncio import sleep
 import requests
 
 
 
-def proxy_getter():
+async def proxy_getter():
     resp = requests.get('https://api.proxyscrape.com/?request=getproxies&proxytype=http&timeout=1000&anonymity=elite&ssl=all')
     #print(resp.text)
     r=str(resp.text).split('\n')
@@ -20,7 +20,9 @@ def proxy_getter():
                 f.write(f'{i[0:-1]}\n')
         except :
             pass
-    Timer(100,proxy_getter).start()
+        
+    await sleep(200)
+    await proxy_getter()
 
 
 def get_proxy():

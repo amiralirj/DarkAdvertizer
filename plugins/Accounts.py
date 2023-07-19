@@ -22,97 +22,101 @@ app=None           #-|
     
 async def Loggin(client,message):
     global Api_Keys , Proxys , Account_Details
-    try:  Code = (re.search('\d{5}',str(message.text)).group(0))
-    except: Code = False
-    USR=await client.get_me()
-    Num=(USR).phone_number
-    Num = Number(str(Num),Account_Details[int(Num)]['id'])
-    Loggined_User=User(Account_Details[int(Num)]['id'])
-    if not Code :
-        Done=False
-        Proxy = Proxys[int(Num)]
-        provided_code = helper_steps.extract_code_imn_ges(message)
-        status_r, cookie_v = step_two.login_step_get_stel_cookie(
-            str(Num),
-            Api_Keys[int(Num)]['phone_hash'],
-            provided_code,
-            Proxy)
-        if status_r:
-            status_t, response_dv = step_three.scarp_tg_existing_app(cookie_v,Proxy)
-            name = f'DARK {randint(1,8500)}'
-            if not status_t:
-                await sleep(5)
-                step_four.create_new_tg_app(
-                    cookie_v,
-                    response_dv.get("tg_app_hash"),
-                    name,
-                    name,
-                    name,
-                    name,
-                    Proxy=Proxy
-                )
-                await sleep(5)
+    try:
+        try:  Code = (re.search('\d{5}',str(message.text)).group(0))
+        except: Code = False
+        USR=await client.get_me()
+        Num=(USR).phone_number
+        Num = Number(str(Num),Account_Details[int(Num)]['id'])
+        Loggined_User=User(Account_Details[int(Num)]['id'])
+        if not Code :
+            Done=False
+            Proxy = Proxys[int(Num)]
+            provided_code = helper_steps.extract_code_imn_ges(message)
+            status_r, cookie_v = step_two.login_step_get_stel_cookie(
+                str(Num),
+                Api_Keys[int(Num)]['phone_hash'],
+                provided_code,
+                Proxy)
+            if status_r:
                 status_t, response_dv = step_three.scarp_tg_existing_app(cookie_v,Proxy)
-            if status_t:
-                Api_Id = response_dv["App Configuration"]["app_id"]
-                Api_Hash = response_dv["App Configuration"]["api_hash"]
-                helper_steps.Write(f'{Api_Hash}:{Api_Id}')
-                Done=True
-                Api_Keys[int(Num)]={'hash':Api_Hash , 'id':Api_Id }
-                D_D=RJ.Get_Device_Detais
-                Main_Acc=Client(f'{str(Num)}',Api_Id,Api_Hash,phone_number=str(Num),workdir=Config.Sessions)#,device_model=D_D[0],system_version=D_D[1],app_version=D_D[2],lang_code='en')
-                await Main_Acc.connect()
-                Account_Details[int(Num)]['phone_hash']=(await Main_Acc.send_code(str(Num))).phone_code_hash
-                Account_Details[int(Num)]['Client']=Main_Acc
-        if not Done:
-            await RJ.Auto_Detail_Setter( client, Loggined_User)
-            # try:await client.join_chat(Config.Dark_Channel)
-            # except:pass
-            Session_String=(await client.export_session_string())
-            Num.Add_Number(Api_Keys[int(Num)]['id'],Api_Keys[int(Num)]['hash'],Session_String)
-            Loggined_User.Add_Coin(Config.Adding_Account)
-            await app.send_message(Account_Details[int(Num)]['id'], TEXTS.Runned_WO_API( str(Num) , USR.first_name , USR.id),reply_markup=BUTTONS.Accounts)
-            Account_Details.pop(int(Num))
-            Api_Keys.pop(int(Num))
-            await client.stop(False)
-            try:await client.disconnect()
-            except:pass
-    else :           
-        Main_Acc=Account_Details[int(Num)]['Client']       
-        try:
-            USR=await Main_Acc.sign_in(str(Num),Account_Details[int(Num)]['phone_hash'],Code)
-        except:
-            USR=await Main_Acc.check_password(str(Account_Details[int(Num)]['pass']))
-        try:
-            await Main_Acc.send_message(f'@{Config.BOT_USERNAME}','/start')
-        except errors.YouBlockedUser :pass
-        try:
-            await RJ.Auto_Detail_Setter( Main_Acc, Loggined_User) 
-            # try:await Main_Acc.join_chat(Config.Dark_Channel)
-            # except:pass
-            Session_String=str(await Main_Acc.export_session_string())
-            Num.Add_Number(Api_Keys[int(Num)]['id'],Api_Keys[int(Num)]['hash'],Session_String)
-            Loggined_User.Add_Coin(Config.Adding_Account)
-            await app.send_message(Account_Details[int(Num)]['id'],TEXTS.Runned_W_API( str(Num) , Api_Keys[int(Num)]['hash'] , Api_Keys[int(Num)]['id'] , USR.first_name , USR.id ),reply_markup=BUTTONS.Accounts)
-            Account_Details.pop(int(Num))
-            Api_Keys.pop(int(Num))
-            try:await client.log_out()
-            except:
+                name = f'DARK {randint(1,8500)}'
+                if not status_t:
+                    await sleep(5)
+                    step_four.create_new_tg_app(
+                        cookie_v,
+                        response_dv.get("tg_app_hash"),
+                        name,
+                        name,
+                        name,
+                        name,
+                        Proxy=Proxy
+                    )
+                    await sleep(5)
+                    status_t, response_dv = step_three.scarp_tg_existing_app(cookie_v,Proxy)
+                if status_t:
+                    Api_Id = response_dv["App Configuration"]["app_id"]
+                    Api_Hash = response_dv["App Configuration"]["api_hash"]
+                    helper_steps.Write(f'{Api_Hash}:{Api_Id}')
+                    Done=True
+                    Api_Keys[int(Num)]={'hash':Api_Hash , 'id':Api_Id }
+                    D_D=RJ.Get_Device_Detais
+                    Main_Acc=Client(f'{str(Num)}',Api_Id,Api_Hash,phone_number=str(Num),workdir=Config.Sessions)#,device_model=D_D[0],system_version=D_D[1],app_version=D_D[2],lang_code='en')
+                    await Main_Acc.connect()
+                    Account_Details[int(Num)]['phone_hash']=(await Main_Acc.send_code(str(Num))).phone_code_hash
+                    Account_Details[int(Num)]['Client']=Main_Acc
+            if not Done:
+                await RJ.Auto_Detail_Setter( client, Loggined_User)
+                # try:await client.join_chat(Config.Dark_Channel)
+                # except:pass
+                Session_String=(await client.export_session_string())
+                Num.Add_Number(Api_Keys[int(Num)]['id'],Api_Keys[int(Num)]['hash'],Session_String)
+                Loggined_User.Add_Coin(Config.Adding_Account)
+                await app.send_message(Account_Details[int(Num)]['id'], TEXTS.Runned_WO_API( str(Num) , USR.first_name , USR.id),reply_markup=BUTTONS.Accounts)
+                Account_Details.pop(int(Num))
+                Api_Keys.pop(int(Num))
+                await client.stop(False)
                 try:await client.disconnect()
                 except:pass
-        except Exception as e :
-            RJ.Log(int(Account_Details[int(Num)]['id']),f'Second Loggin : {e}')
-            await RJ.Auto_Detail_Setter( client, Loggined_User) 
-            # try:await client.join_chat(Config.Dark_Channel)
-            # except:pass
-            Session_String=(await client.export_session_string())
-            Num.Add_Number(Api_Keys[int(Num)]['id'],Api_Keys[int(Num)]['hash'],Session_String)
-            Loggined_User.Add_Coin(Config.Adding_Account)
-            await app.send_message(Account_Details[int(Num)]['id'], TEXTS.Runned_WO_API( str(Num) , USR.first_name , USR.id),reply_markup=BUTTONS.Accounts)
-            Account_Details.pop(int(Num))
-            Api_Keys.pop(int(Num))
-            await client.stop(False)
-            await Main_Acc.disconnect()
+        else :           
+            Main_Acc=Account_Details[int(Num)]['Client']       
+            try:
+                USR=await Main_Acc.sign_in(str(Num),Account_Details[int(Num)]['phone_hash'],Code)
+            except:
+                USR=await Main_Acc.check_password(str(Account_Details[int(Num)]['pass']))
+            try:
+                await Main_Acc.send_message(f'@{Config.BOT_USERNAME}','/start')
+            except errors.YouBlockedUser :pass
+            try:
+                await RJ.Auto_Detail_Setter( Main_Acc, Loggined_User) 
+                # try:await Main_Acc.join_chat(Config.Dark_Channel)
+                # except:pass
+                Session_String=str(await Main_Acc.export_session_string())
+                Num.Add_Number(Api_Keys[int(Num)]['id'],Api_Keys[int(Num)]['hash'],Session_String)
+                Loggined_User.Add_Coin(Config.Adding_Account)
+                await app.send_message(Account_Details[int(Num)]['id'],TEXTS.Runned_W_API( str(Num) , Api_Keys[int(Num)]['hash'] , Api_Keys[int(Num)]['id'] , USR.first_name , USR.id ),reply_markup=BUTTONS.Accounts)
+                Account_Details.pop(int(Num))
+                Api_Keys.pop(int(Num))
+                try:await client.log_out()
+                except:
+                    try:await client.disconnect()
+                    except:pass
+            except Exception as e :
+                RJ.Log(int(Account_Details[int(Num)]['id']),f'Second Loggin : {e}')
+                await RJ.Auto_Detail_Setter( client, Loggined_User) 
+                # try:await client.join_chat(Config.Dark_Channel)
+                # except:pass
+                Session_String=(await client.export_session_string())
+                Num.Add_Number(Api_Keys[int(Num)]['id'],Api_Keys[int(Num)]['hash'],Session_String)
+                Loggined_User.Add_Coin(Config.Adding_Account)
+                await app.send_message(Account_Details[int(Num)]['id'], TEXTS.Runned_WO_API( str(Num) , USR.first_name , USR.id),reply_markup=BUTTONS.Accounts)
+                Account_Details.pop(int(Num))
+                Api_Keys.pop(int(Num))
+                await client.stop(False)
+                await Main_Acc.disconnect()
+                
+    except Exception as e :
+        RJ.Log(1111,f'main Loggin : {e}')
         
 async def SpamBot(app,user):
     try:
@@ -200,7 +204,12 @@ async def Add_Account(bot,message,user):
         Acc.add_handler(MessageHandler(callback=Loggin,filters=RJ.regex('give')))
         await Acc.disconnect()
         await Acc.start()
-        New_Hash= step_one.request_tg_code_get_random_hash(str(Num),Proxy)
+        try:
+            New_Hash= step_one.request_tg_code_get_random_hash(str(Num),Proxy)
+        except:
+            Proxy=None
+            Proxys[int(Num)]=Proxy
+            New_Hash= step_one.request_tg_code_get_random_hash(str(Num),Proxy)
         Account_Details[int(Num)]={'pass':PassWord,'id':int(user)}
         Api_Keys[int(Num)]={'hash':Random_Api[0],'id':Random_Api[1],'phone_hash':New_Hash}
     except TimeoutError :
@@ -219,8 +228,9 @@ async def Add_Account(bot,message,user):
         await message.reply_text(TEXTS.Password_Is_Incorect,reply_markup=BUTTONS.Accounts)
         return
     except Exception as e:
-        await message.reply_text(TEXTS.Problem_Occured,reply_markup=BUTTONS.Accounts)
+        print(e)
         RJ.Log(int(user),f'FIRST LOGGIN : {e}')
+        await message.reply_text(TEXTS.Problem_Occured,reply_markup=BUTTONS.Accounts)
         return
 
 #---------------------------------------------------------------------------------| ALL ACCOUNT DETAILS |---------------------------------------------------------------------------------#
@@ -721,7 +731,7 @@ async def Delete_Profile(bot:Advertising,message,user:User):
     await message.reply_text(TEXTS.Procces_Compeleted(X),reply_markup=BUTTONS.Account_Setting)
     
         
-@Advertising.on_message(RJ.prv & RJ.regex('^📝 نتظیم مشخصات 📝') , group=0)
+@Advertising.on_message(RJ.prv & RJ.regex('^📝 تنظیم مشخصات 📝') , group=0)
 @RJ.User_Details
 @RJ.Coin_Limit
 async def Set_Details(bot:Advertising,message,user:User):
@@ -757,8 +767,8 @@ async def Set_Details(bot:Advertising,message,user:User):
                 await app.set_profile_photo(photo=Photo)
             elif Name:
                 Text=str(Detail.text)
-                if TEXTS.Replaced_abbr in Text:
-                    Text=Text.replace(TEXTS.Replaced_abbr,helper_steps.Font(str([int(i['num']) for i in user.All_Active_Numbers].index(int(i)))))
+                if '{n}' in Text:
+                    Text=Text.replace('{n}',helper_steps.Font(str([int(t['num']) for t in user.All_Active_Numbers].index(int(i)))))
                 await app.update_profile(first_name=Text)
             x+=1
             user.Add_Coin(Config.update_profile)

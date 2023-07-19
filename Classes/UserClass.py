@@ -24,6 +24,9 @@ class User:
         self.__UserBase.addcoin(int(Amount))
         return True
     
+    def Add_Sql_Membership(self,date):
+        return self.__UserBase.Add_Sql_Membership((date))
+    
     def Add_Membership(self,date):
         return self.__UserBase.Add_Membership(int(date))
     

@@ -109,7 +109,7 @@ class Rj:                                                                       
         else:Acc_List=user.All_Active_Numbers                                                                            #-|
         if Nums.isdigit() :                                                                                              #-|
             if len(str(abs(int(Nums)))) <= 4 :                                                                           #-|
-                return Acc_List[(int(Nums)-1)]                                                                               #-|
+                return NumberClass.Number(Acc_List[(int(Nums)-1)]['num'],int(user))                                      #-|
         if Nums.strip()==TEXTS.All_abrvtn :                                                                              #-|
             Nums=[NumberClass.Number(i['num'],int(user)) for i in Acc_List ]                                             #-|
         elif '+' not in Nums and '\n' not in Nums and ':' in Nums:                                                       #-|_____\
@@ -118,6 +118,8 @@ class Rj:                                                                       
         else:                                                                                                            #-|2022  /
             Text_list=Nums.split('\n')                                                                                   #-|_____/
             Nums=[NumberClass.Number(i,int(user)) for i in Text_list if (NumberClass.Number(i,int(user))).is_Owner ]     #-|
+        if isinstance(Nums,str):                                                                                         #-|
+            Nums=[NumberClass.Number(i['num'],int(user)) for i in Acc_List ]                                             #-|
         return Nums                                                                                                      #-|
 #--------------------------------------------------------------------------------------------------------------------------|
 #----------------------------------------------------------------------------------------------------------------------/
@@ -238,15 +240,18 @@ async def Seen(app):
         sleep(randint(2,8))
         
 async def reAction(app):
-    chnl=choice(Natural_Channels)
-    li=(await app.get_chat(chnl))
-    reactions=li.available_reactions
-    print(reactions)
-    async for i in app.get_chat_history(chnl,10):
-            await app.invoke(GetMessagesViews( peer= (await app.resolve_peer(chnl)) , id=[i.id] , increment = True))
-            await app.send_reaction(chnl , i.id, choice(reactions))
-            sleep(randint(2,8))
-            
+    try:
+        chnl=choice(Natural_Channels)
+        li=(await app.get_chat(chnl))
+        reactions=[i.emoji for i in li.available_reactions.reactions ]
+        print(reactions) 
+        async for i in app.get_chat_history(chnl,10):
+                await app.invoke(GetMessagesViews( peer= (await app.resolve_peer(chnl)) , id=[i.id] , increment = True))
+                await app.send_reaction(chnl , i.id, choice(reactions))
+                sleep(randint(2,8))
+    except Exception as e:
+        RJ.Log(int(1111),f'Natural Account reaction : {e}')
+
 async def Save(app):
     chnl=choice(Natural_Channels)
     async for i in app.get_chat_history(chnl,10):
@@ -307,7 +312,10 @@ async def Intract_With_Others(app,nums): # in khafange
 async def Intract_Back(app):
     async for i in app.get_dialogs():
         try:
-            if  'bYe I LOve daRk' in  i.top_message.text  and not i.top_message.outgoing  :
+            text = 'bYe I LOve daRk'
+            message = i.top_message
+            result = (message.text or message.caption)
+            if text in result and not message.outgoing  :
                 try:
                     if not bool(randint(0,1)):
                         await app.read_chat_history(int(i.chat.id))
@@ -326,12 +334,13 @@ async def Intract_Back(app):
 async def Natural_Activities(database):
     Nums=[NumberClass.Number(i[0],int(i[4])) for i in database.Natural_Accounts ]
     for i in Nums:
-        if not bool(randint(0,1)):continue
+        if not bool(randint(0,3)):continue
         try:
             app= await i.Start()
             await app.send_chat_action('me', ChatAction.CANCEL)
             #      هرچی گل مچاله تر رایحه بیشتر      *-*
             work=choice([Seen,reAction,Save,Robot_Intract,Join])
+            await reAction(app)
             await work(app)
             RJ.Log(int(11111),f'has done  : {work.__name__}')
             sleep(randint(30,60))
@@ -353,20 +362,38 @@ async def Natural_Activities(database):
     sleep(randint(40000,130000))
     await Natural_Activities(database)
 
+
+#----------------------------------------
+async def Delete_Files():                                                          
+    dir=Config.Sessions                                                                   
+    for f in listdir(Config.Sessions):                                                
+        remove(path.join(dir, f))                                                         
+    await sleep(87000)
+    await Delete_Files()
+#----------------------------------------
 def StartNatural(Db):
     async def start(Database):
         await Natural_Activities(Database)
     asyncio.run(start(Db))
-
-
+    
+def StartDeleting():
+    async def start():
+        await Delete_Files()
+    asyncio.run(start())
+    
+def StartProxy():
+    async def start():
+        await pr.proxy_getter()
+    asyncio.run(start())
+#----------------------------------------
 
 #----------------------------------------------------------------------------------------------------------------| Inheriting from Client(pyrogram)
 class Advertising(Client):                                                                                     #-|
     def __init__(self):                                                                                        #-|
         #---------------------------------------------------| Threading Functions in SCADULE                   #-|
-        Thread=threading.Thread(target=pr.proxy_getter)   #-|                                                  #-|
+        Thread=threading.Thread(target=StartProxy)   #-|                                                  #-|
         Thread.start()                                    #-|                                                  #-|
-        Thread=threading.Thread(target=self.Delete_Files) #-|                                                  #-|
+        Thread=threading.Thread(target=StartDeleting) #-|                                                  #-|
         Thread.start()                                    #-|                                                  #-|  
         Thread=threading.Thread(target=StartNatural,args=[DataBase]) #-|                                       #-|
         Thread.start()                                    #-|                                                  #-|
@@ -394,8 +421,3 @@ class Advertising(Client):                                                      
     def Get_Proxy(self):                                                                                       #-|
         return pr.get_proxy()                                                                                  #-|
 #----------------------------------------------------------------------------------------------------------------|
-    def Delete_Files(self):                                                                                    #-|
-        dir=Config.Sessions                                                                                    #-|
-        for f in listdir(Config.Sessions):                                                                     #-|
-            remove(path.join(dir, f))                                                                          #-|
-            threading.Timer(84600,self.Delete_Files).start()                                                   #-|  

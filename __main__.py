@@ -21,6 +21,7 @@
 #  OTHER DEALINGS IN THE SOFTWARE.
 
 from Advertiserbot import Advertising
+
 if __name__ == "__main__":
     Advertising().run()
     

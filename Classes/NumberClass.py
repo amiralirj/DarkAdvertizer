@@ -3,10 +3,18 @@ from pyrogram import Client , errors
 
 class Number:
     DataBase=DataBase
-    def __init__(self,Number:str,User_id:int) -> None:
+    def __init__(self,Number:str,User_id:int,admin=False,dell=False) -> None:
         self.Number=int(str(Number).replace(' ', '').replace('(','').replace(')','').replace('-','').replace('_',''))
-        self.__NumberBase=self.__class__.DataBase.NumberBase(User_id,self.Number,self.__class__.DataBase.con)
+        
+        if admin :
+            User_id=self.__class__.DataBase.Num_Owner(Number)
+        
         self.User_id=User_id
+        
+        self.__NumberBase=self.__class__.DataBase.NumberBase(User_id,self.Number,self.__class__.DataBase.con)
+        if dell:
+            self.__NumberBase.Delete_Number()
+            return
         self.Is_Regestered = self.__NumberBase.Number_Check()
         if self.Is_Regestered : 
             detail=self.__NumberBase.Number_Details()
@@ -45,8 +53,10 @@ class Number:
         if self.natural:return '🟢'
         else:return '🔴'
         
-    def Delete(self):
-        if self.is_Owner:
+    def Delete(self,admin=False):
+        x=self.is_Owner
+        if admin : x = True
+        if x:
             self.__NumberBase.Delete_Number()
     
     def __str__(self) -> str:
