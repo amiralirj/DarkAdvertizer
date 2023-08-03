@@ -31,5 +31,6 @@
 - ### Installing requirements
     - Install required packages using `pip install -U -r requirements.txt`
     - Start The Bot : `python __main__.py`
+    - pyromod==V1.5 , pyrogram V2.056
     - robot should be admin on banner channel (Banners_Channel) and main channel (Dark_Channel)
     - Advertise :) 
